@@ -8,6 +8,32 @@ Information in this configuration is ingested with Telegraf, stored within the I
 
 In this lab, we will configure the Intel insights platform for point data and explore the capabilities that it offers.
 
+## Intel Edge Insights Software Components Overview
+
+The edge insights platform from Intel is a framework for rapidly deploying video analytics solutions. It provides a microservice architecture that distributes the tasks of video intake, filtering, analyzing with deep learning and computer vision, and performing automated actions, alerts, and intelligent monitoring.
+
+The edge insights platform provides triggers/filters and classifiers that can be customized by an organization to fit their custom needs.
+
+The edge insights platform supports both a developer mode and a production mode. The developer mode disables certificate security and allows the developer to concentrate on the functionality of their application without deploying cryptographic certificates.
+
+Let's go through a description of the components of this microarchitecture
+
+Multiple microservices coordinate to provide the overall service of the edge insights platform. a number of these are open source projects such as telegraf, influxdb, chronograf, Kapacitor (collectively called the TICK stack) and Vault, a service that keeps cryptographic secrets in a secure manner.
+
+Here's a list of the microservices:
+
+The data agent
+Data analytics
+Data bus abstraction
+Data ingestion library
+The image store
+The stream manager
+Stream sub library
+Telegraph
+Video ingestion
+Secret storage
+Algorithms including triggers / filters and classifiers
+
 ## Prerequisites
 
 This article was written for the Intel Edge Insights Software version 1.5. The software is on a quarterly release cadence.
@@ -157,6 +183,42 @@ I0608 02:25:57.3029569 StreamManager.go:159] Publishing topic: point_classifier_
 I0608 02:25:58.3029139 StreamManager.go:159] Publishing topic: point_classifier_results
 I0608 02:25:59.3025279 StreamManager.go:159] Publishing topic: point_classifier_results
 ```
+
+## More Information about the DataAgent
+
+Technologies and Components Used
+The data agent uses a number of technologies directly and it also bundles several projects as sidecars into its docker image.
+
+Toml - Tom's obvious, minimal language is a specification that is often used for configuration files. This language is used for the configuration files in the TICK stack.
+GRPC - a high-performance, open source universal RPC framework
+
+### Security
+When the data agent begins it starts by reading the command-line arguments and checking if the program is running on a genuine Intel system.
+
+If it is running on a genuine Intel system it checks to see if the trusted platform module can be enabled
+If then checks to see if it is running in developer mode or production mode.
+
+Next it checks to make sure that vault is running and if it is not running the data agent will exit.
+
+It then reads the certificates for influxdb from vault and writes out the SSL secrets that the grpc internal client will use.
+
+The certificate authority certificate is written to /etc/ssl/ca/ca_certificate.pem
+Service Initialization
+
+After the security initialization is performed the data agent then launches influxdb and the stream manager.
+The data agent and then takes UDP data from influxdb and forward it to the stream manager
+The key for each stream is used as the topic to publish to the stream server.
+
+## Exploring the InfluxDB
+
+DescriptionInfluxDB is an open-source time series database developed by InfluxData. It is written in Go and optimized for fast, high-availability storage and retrieval of time series data in fields such as operations monitoring, application metrics, Internet of Things sensor data, and real-time analytics. 
+
+Let's use the InfluxDB command line client to connect to the InfluxDB.
+
+```
+influx -username admin -password admin123 -ssl -unsafeSsl
+```
+
 
 ## Configure Kapacitor to Send Alerts
 
