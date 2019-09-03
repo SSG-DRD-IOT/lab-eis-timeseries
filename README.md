@@ -219,7 +219,73 @@ Let's use the InfluxDB command line client to connect to the InfluxDB.
 influx -username admin -password admin123 -ssl -unsafeSsl
 ```
 
+### Let's explore the database with some basic commands.
+
+Let's start by listing all the databases.
+```
+show databases;
+```
+
+Use the "datain" database 
+```
+use datain
+```
+
+Next let's view the measurement tables that are being recorded. This is the data that the Intel Edge Insights Software is recording.
+
+```
+show measurements
+```
+
+Now, we can view the data from the point_classifier. 
+```
+select * from point_data;
+```
+
+Now run through the same commands with the *point_classifier_results* measurements table.
 
 ## Configure Kapacitor to Send Alerts
 
-## Configure Chronograf to Visualize the Data
+Kapacitor is able to handle alerts using two different methods: Push to Handler and Publish and Subscribe
+
+Both approaches need handlers to be enabled and configured and information such as tokens and passwords need to be stored securely. 
+
+### Push to handler
+TICKscript handlers are relevant functions that can be called to handle data and push it to third parties. For example, you can call the log function, the email function, the HTTP out function or a user-defined third party function.
+
+### Publish and Subscribe
+Alert topics are similar to topics in MQTT. A topic is a string that groups together alerts. Multiple handlers can subscribe to a topics and be executed for any message published to the topic. Handlers are bound to topics either on the command line or in a YAML or JSON file.
+
+For example: 
+```
+topic: cpu
+id: slack
+kind: slack
+options:
+   channel: '#kapacitor'
+```
+
+Save this to a file anem slack_cpu_handler.yaml
+
+```
+kapacitor define-topic-handler slack_cpu_handler.yaml
+
+```
+
+### List of Handlers
+
+The following handlers are currently supported:
+Alerta: Sending alerts to Alerta.
+Email: To send alerts by email.
+HipChat: Sending alerts to the HipChat service.
+Kafka: Sending alerts to an Apache Kafka cluster.
+MQTT: Publishing alerts to an MQTT broker.
+OpsGenie: Sending alerts to the OpsGenie service.
+PagerDuty: Sending alerts to the PagerDuty service.
+Pushover: Sending alerts to the Pushover service.
+Sensu: Sending alerts to Sensu.
+Slack: Sending alerts to Slack.
+SNMP Trap: Posting to SNMP traps.
+Talk: Sending alerts to the Talk service.
+Telegram: Sending alerts to Telegram.
+VictorOps: Sending alerts to the VictorOps service.
