@@ -125,6 +125,10 @@ Simple Python temperature sensor simulator
 
 To configure the Intel Edge insights Software for point data ingestion for data that is coming over MQTT, open up the telegraf.conf file and find the section for input MQTT.
 
+```bash
+gedit $EIS_HOME/docker_setup/config/telegraf.conf
+```
+
 ```
 [[inputs.mqtt_consumer]]
 	servers = ["tcp://$HOST_IP:1883"]
@@ -137,12 +141,14 @@ To configure the Intel Edge insights Software for point data ingestion for data 
    client_id = ""
 ```
 
+Now rebuild the EIS containers.
+
 ```
 cd $EIS_HOME/docker_setup
 sudo make build run
 ```
 
-Now rebuild the EIS containers.
+
 
 Inside the dockerfile.yml, The MQTT port is exposed to the host system. This means that with telegraph configured to receive input on the same port that any MQTT client which is sending traffic to the host system can be received and fed into the Intel Edge Insight software.
 
