@@ -233,6 +233,15 @@ DescriptionInfluxDB is an open-source time series database developed by InfluxDa
 
 Let's use the InfluxDB command line client to connect to the InfluxDB.
 
+First we need to install the InfluxDB client:
+
+```
+sudo apt install influxdb-client
+```
+Next connect to InfluxDB:
+
+### **DANIEL: InfluxDB is not running**
+
 ```
 influx -username admin -password admin123 -ssl -unsafeSsl
 ```
