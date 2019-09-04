@@ -161,22 +161,34 @@ Uses command to check the logs of the docker telegraph container.
 
 Once Intel EIS is rebuilt and running, go to the \$EIS_HOME/tools/mqtt-temp-sensor directory. From here you can launch MQTT broker as well as a publisher and subscriber.
 
-$ cd $EIS_HOME/tools/mqtt-temp-sensor
+`$ cd $EIS_HOME/tools/mqtt-temp-sensor`
+
 Build the docker container
 
-`./build.sh`
+`sudo ./build.sh`
 
 Run the broker
 
-`./broker.sh`
+`sudo ./broker.sh`
 
-Run the publisher (different terminal window)
+**Open New Terminal**
+Run the publisher
 
-`./publisher.sh`
+```
+export EIS_HOME=/home/eis/Workshop/IEdgeInsights-v1.5LTS
+cd $EIS_HOME/tools/mqtt-temp-sensor
+sudo ./publisher.sh
+```
 
 If you wish to see the messages going over MQTT, run the subscriber with the following command:
+**Open New Terminal**
 
-`./subscriber.sh`
+```
+
+export EIS_HOME=/home/eis/Workshop/IEdgeInsights-v1.5LTS
+cd $EIS_HOME/tools/mqtt-temp-sensor
+sudo ./subscriber.sh
+```
 
 ## Verify the ia_data_agent is Ingesting and Publishing Data
 
