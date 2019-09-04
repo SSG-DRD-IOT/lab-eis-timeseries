@@ -57,7 +57,7 @@ Let's get started.
 
 Let’s set a variable for the top level of the EIS installations. If you unzipped the software in a different location, be sure to change the variable below.
 
-`export EIS_HOME=/home/eis/labs/IEdgeInsights`
+`export EIS_HOME=/home/eis/Workshop/IEdgeInsights-v1.5LTS`
 
 ## Shut down the Intel Edge Insights Software service
 
