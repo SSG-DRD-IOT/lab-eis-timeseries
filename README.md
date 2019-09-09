@@ -177,7 +177,7 @@ sudo ./subscriber.sh
 
 ## Verify the ia_data_agent is Ingesting and Publishing Data
 
-`docker logs -f ia_data_agent`
+`sudo docker logs -f ia_data_agent`
 
 Below is a snapshot of sample output of the above command.
 
@@ -277,7 +277,7 @@ options:
    channel: '#kapacitor'
 ```
 
-Save this to a file anem slack_cpu_handler.yaml
+Save this to a file named slack_cpu_handler.yaml
 
 ```
 kapacitor define-topic-handler slack_cpu_handler.yaml
