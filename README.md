@@ -225,8 +225,6 @@ sudo apt install influxdb-client
 ```
 Next connect to InfluxDB:
 
-### **DANIEL: InfluxDB is not running**
-
 ```
 influx -username admin -password admin123 -ssl -unsafeSsl
 ```
