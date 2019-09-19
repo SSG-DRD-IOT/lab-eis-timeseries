@@ -135,7 +135,34 @@ gedit $EIS_HOME/docker_setup/config/telegraf.conf
    client_id = ""
 ```
 
+In the following lab we will want to take CPU temperture measurments as part of the dashboard creation. Lets set up Telegraf to do that. Search for "[[inputs.cpu]]" and uncomment the following lines:
+
+```
+# Read metrics about cpu usage
+ [[inputs.cpu]]
+  ## Whether to report per-cpu stats or not
+  percpu = true
+  ## Whether to report total system cpu stats or not
+  totalcpu = true
+  ## If true, collect raw CPU time metrics.
+  collect_cpu_time = false
+  ## If true, compute and report the sum of all non-idle CPU states.
+  report_active = false
+```
+
+Save the changes.
+
+
 Inside the dockerfile.yml, The MQTT port is exposed to the host system. This means that with telegraph configured to receive input on the same port that any MQTT client which is sending traffic to the host system can be received and fed into the Intel Edge Insight software.
+
+### Rebuild EIS
+
+Since we changed the telegraf configuration we need to rebuild ouor images. 
+
+```
+cd $EIS_HOME/docker_setup/
+sudo make build run
+```
 
 ## Check the docker logs
 
