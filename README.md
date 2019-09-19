@@ -87,13 +87,6 @@ The first service is telegraf, which is a service with a flexible plug-in archit
 
 The second service is the data analytics service, which contains the Intel Edge insights datapoint analytics software as well as Kapacitor from the TICK stack. Kapacitor is a monitoring and alerting solution that integrates with multiple reporting out options such as email, executing a script, syslog, Apache Kafka, MQTT, SNMPTrap, Slack Messaging and others. See the documentation for Kapacitor for a complete list.
 
-### Rebuild EIS
-
-`cd $EIS_HOME/docker_setup`
-
-`sudo make build run`
-
-Now the Intel Edge Insights Platform is running in point data mode.
 
 ## Tips for working with Docker containers
 
@@ -139,7 +132,7 @@ In the following lab we will want to take CPU temperture measurments as part of 
 
 ```
 # Read metrics about cpu usage
- [[inputs.cpu]]
+[[inputs.cpu]]
   ## Whether to report per-cpu stats or not
   percpu = true
   ## Whether to report total system cpu stats or not
@@ -157,7 +150,7 @@ Inside the dockerfile.yml, The MQTT port is exposed to the host system. This mea
 
 ### Rebuild EIS
 
-Since we changed the telegraf configuration we need to rebuild ouor images. 
+Since we changed the telegraf configuration we need to rebuild our images. 
 
 ```
 cd $EIS_HOME/docker_setup/
