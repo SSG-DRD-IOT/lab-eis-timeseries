@@ -117,7 +117,7 @@ When you are inside a docker container often running a simple process snapshot c
 
 ## Configuring Telegraf for PointData Ingestion
 
-To configure the Intel Edge insights Software for point data ingestion for data that is coming over MQTT, open up the telegraf.conf file and find the section for input MQTT.
+The configuration for point data ingestion can be found at: `$EIS_HOME/docker_setup/config/telegraf.conf`. Lets take a look at that file now. Open up the telegraf.conf file and find the section for input MQTT - Note: This is a large file and the needed section is around line 1200, use ctrl-f to search for "[[inputs.mqtt_consumer]]".
 
 ```bash
 gedit $EIS_HOME/docker_setup/config/telegraf.conf
