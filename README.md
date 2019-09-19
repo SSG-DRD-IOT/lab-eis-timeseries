@@ -285,17 +285,31 @@ kapacitor define-topic-handler slack_cpu_handler.yaml
 ### List of Handlers
 
 The following handlers are currently supported:
+
 Alerta: Sending alerts to Alerta.
+
 Email: To send alerts by email.
+
 HipChat: Sending alerts to the HipChat service.
+
 Kafka: Sending alerts to an Apache Kafka cluster.
+
 MQTT: Publishing alerts to an MQTT broker.
+
 OpsGenie: Sending alerts to the OpsGenie service.
+
 PagerDuty: Sending alerts to the PagerDuty service.
+
 Pushover: Sending alerts to the Pushover service.
+
 Sensu: Sending alerts to Sensu.
+
 Slack: Sending alerts to Slack.
+
 SNMP Trap: Posting to SNMP traps.
+
 Talk: Sending alerts to the Talk service.
+
 Telegram: Sending alerts to Telegram.
+
 VictorOps: Sending alerts to the VictorOps service.
