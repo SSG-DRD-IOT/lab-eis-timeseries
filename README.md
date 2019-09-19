@@ -139,7 +139,7 @@ Inside the dockerfile.yml, The MQTT port is exposed to the host system. This mea
 
 ## Check the docker logs
 
-Uses command to check the logs of the docker telegraph container.
+Uses command to check the logs of the docker telegraph container - You can use this method to troubleshoot issues with data transport.
 `sudo docker logs ia_telegraf`
 
 ## Start the Simulated Sensor Data
