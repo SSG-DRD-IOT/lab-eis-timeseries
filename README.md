@@ -2,9 +2,9 @@
 
 ## Introduction
 
-The Intel Edge Insights Software can be configured to not only take in video information but also to take in sensory information and other time series based related data series.
+The Intel Edge Insights Software can be configured to also injest time series data such as temperature or vibration. 
 
-Information in this configuration is ingested with Telegraf, stored within the Influxdb database, alerts and monitors can be set using Kapacitor, and visualized with Chrongraf.
+When configured for time series data EIS uses Telegraf for injestion, Influxdb for storage, Kapacitor for alerts and monitors, and Chrongraf for visualization.
 
 In this lab, we will configure the Intel Edge Insights platform for time series and explore the capabilities that it offers.
 
