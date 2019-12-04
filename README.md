@@ -6,13 +6,13 @@ The Intel Edge Insights Software can be configured to not only take in video inf
 
 Information in this configuration is ingested with Telegraf, stored within the Influxdb database, alerts and monitors can be set using Kapacitor, and visualized with Chrongraf.
 
-In this lab, we will configure the Intel insights platform for point data and explore the capabilities that it offers.
+In this lab, we will configure the Intel Edge Insights platform for time series and explore the capabilities that it offers.
 
 ## Intel Edge Insights Software Components Overview
 
-The edge insights platform from Intel is a framework for rapidly deploying video analytics solutions. It provides a microservice architecture that distributes the tasks of video intake, filtering, analyzing with deep learning and computer vision, and performing automated actions, alerts, and intelligent monitoring.
+The edge insights platform from Intel is a framework for rapidly deploying video and time series analytics solutions. It provides a microservice architecture that distributes the tasks of video intake, filtering, analyzing with deep learning and computer vision, and performing automated actions, alerts, and intelligent monitoring.
 
-The edge insights platform provides triggers/filters and classifiers that can be customized by an organization to fit their custom needs.
+The edge insights platform provides filters and classifiers that can be customized by an organization to fit their custom needs.
 
 The edge insights platform supports both a developer mode and a production mode. The developer mode disables certificate security and allows the developer to concentrate on the functionality of their application without deploying cryptographic certificates.
 
@@ -20,35 +20,21 @@ Let's go through a description of the components of this microarchitecture
 
 Multiple microservices coordinate to provide the overall service of the edge insights platform. a number of these are open source projects such as telegraf, influxdb, chronograf, Kapacitor (collectively called the TICK stack) and Vault, a service that keeps cryptographic secrets in a secure manner.
 
-Here's a list of the microservices:
-
-The data agent
-Data analytics
-Data bus abstraction
-Data ingestion library
-The image store
-The stream manager
-Stream sub library
-Telegraph
-Video ingestion
-Secret storage
-Algorithms including triggers / filters and classifiers
-
 ## Prerequisites
 
-This article was written for the Intel Edge Insights Software version 1.5. The software is on a quarterly release cadence.
+This article was written for the Intel Edge Insights Software version 2.0. The software is on a quarterly release cadence.
 
 ## Setup instructions
 
-Setting the Intel insights platform to process pointed data. In this configuration we will disable the video data ingestion, which can cause a significant load on the CPU.
+Setting the Intel insights platform to process time series data.
 
 In order to accomplish this we will do the following things:
 
 - Set a couple of helpful environmental variables so that we don't need to continually re-type directory names
-- Shut down the Intel insights platform
+- Shut down the Intel Edge Insights Software
 - Modify configuration files
-- Repackage it
-- Relaunch the Intel insights platform
+- Build and Repackage it
+- Relaunch the Intel Edge Insights Software
 - Setup Chronograf to visualize the data
 
 Let's get started.
@@ -57,24 +43,24 @@ Let's get started.
 
 Let’s set a variable for the top level of the EIS installations. If you unzipped the software in a different location, be sure to change the variable below.
 
-`export EIS_HOME=/home/eis/Workshop/IEdgeInsights-v1.5LTS`
+`export EIS_HOME=/home/eis/Workshop/IEdgeInsights-2.0`
 
 ## Shut down the Intel Edge Insights Software service
 
-The **docker_setup** directory is the location for building a that you should be in if you're going to rebuild the edge insights platform, modify configuration files, or manually start and stop the system.
+The **docker_setup** directory is the location for building a that you should be in if you're going to rebuild the Edge Insights Software, modify configuration files, or manually start and stop the system.
 
-If Edge in sizes running, the first step is to stop all docker containers related to it.
+If the software is running, the first step is to stop all docker containers related to it.
 
 `cd $EIS_HOME/docker_setup`
 
-`sudo make down`
+`sudo docker-compose down`
 
 ## Modify the Configuration Files
 
-In order to configure the Intel Edge insights platform for sensor ingestion in point beta mode. We are going to modify the `$EIS_HOME/docker_setup/.env` file.
+In order to configure the Intel Edge Insights Software for sensor ingestion . We are going to modify the `$EIS_HOME/docker_setup/docker-compose.yml` file.
 
 ```
-gedit $EIS_HOME/docker_setup/.env
+gedit $EIS_HOME/docker_setup/docker-compose.yml
 ```
 
 Inside the .env file, find the `IEI_SERVICES` variable and set it to `services_all.json`
