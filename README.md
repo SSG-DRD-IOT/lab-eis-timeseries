@@ -8,17 +8,18 @@ Information in this configuration is ingested with Telegraf, stored within the I
 
 In this lab, we will configure the Intel Edge Insights platform for time series and explore the capabilities that it offers.
 
-## Intel Edge Insights Software Components Overview
+## Intel Edge Insights Software Time Series Mode
 
-The edge insights platform from Intel is a framework for rapidly deploying video and time series analytics solutions. It provides a microservice architecture that distributes the tasks of video intake, filtering, analyzing with deep learning and computer vision, and performing automated actions, alerts, and intelligent monitoring.
+EIS Time Series Analytics component consist of TICK stack except the chronograf and an extra component called InfluxDBConnector. It is responsible for the classification of the point data use case based on the UDF in Kapacitor and publish the classified data to the EIS Message Bus.
 
-The edge insights platform provides filters and classifiers that can be customized by an organization to fit their custom needs.
+Telegraf is a plugin-driven server agent for collecting and sending metrics. Telegraf can collect metrics from a wide range of inputs and write them into a wide array of outputs. It is plugin-driven for both collection and output of data so it is easily extendable.
 
-The edge insights platform supports both a developer mode and a production mode. The developer mode disables certificate security and allows the developer to concentrate on the functionality of their application without deploying cryptographic certificates.
+For more information on Telegraf Kapacitor is an analytics engine and is a part of TICK stack. User can register custom analytics algorithms written in GO/Python (called as User Defined Functions or UDF). Kapacitor also support many built-in functions which can be invoked thorugh Kapacitor's custom script called as TICK script.
 
-Let's go through a description of the components of this microarchitecture
+Kapacitor read the data from InfluxDB and invoke UDF/TICK scripts. The given example has alogorithm written in GOLANG and TICK scripts name is "point_classifier.tick". Kapacitor is a monitoring and alerting solution that integrates with multiple reporting out options such as email, executing a script, syslog, Apache Kafka, MQTT, SNMPTrap, Slack Messaging and others. See the documentation for Kapacitor for a complete list.
 
-Multiple microservices coordinate to provide the overall service of the edge insights platform. a number of these are open source projects such as telegraf, influxdb, chronograf, Kapacitor (collectively called the TICK stack) and Vault, a service that keeps cryptographic secrets in a secure manner.
+
+EIS InfluxDBConnector component is responsible for subscription to InfluxDB database and publishing the point data recieved on the subscription server to the EIS Message Bus.
 
 ## Prerequisites
 
@@ -62,260 +63,92 @@ In order to configure the Intel Edge Insights Software for sensor ingestion . We
 ```
 gedit $EIS_HOME/docker_setup/docker-compose.yml
 ```
+### Comment the ia_video_ingestion and ia_video_analytics Sections
 
-Inside the .env file, find the `IEI_SERVICES` variable and set it to `services_all.json`
-
-`IEI_SERVICES=services_all.json`
-
-If you open the `config/services_all.json` file you will notice that two services are specified by name and by docker image.
-
-The first service is telegraf, which is a service with a flexible plug-in architecture for ingesting data and outputting it to Influxdb.
-
-The second service is the data analytics service, which contains the Intel Edge insights datapoint analytics software as well as Kapacitor from the TICK stack. Kapacitor is a monitoring and alerting solution that integrates with multiple reporting out options such as email, executing a script, syslog, Apache Kafka, MQTT, SNMPTrap, Slack Messaging and others. See the documentation for Kapacitor for a complete list.
+Inside the docker-compose.yml search for the ia_video_ingestion and ia_video_analytics. Comment out the entire section. You can setup EIS to run both video and time series data pipelines, but for this lab we will not be using the video services.
 
 
-## Tips for working with Docker containers
+### Modify the ia_visualizer in docker-compose.yml
+   In ia_visualizer service, uncomment the following lines:
+   ```
+   SubTopics: "InfluxDBConnector/point_classifier_results"
+   point_classifier_results_cfg: "zmq_tcp,127.0.0.1:65016"
+   ```
+   and comment the following lines:
+   ```
+   SubTopics: "VideoAnalytics/camera1_stream_results"
+   camera1_stream_results_cfg : "zmq_tcp,127.0.0.1:65013"
+   ```
+   
+## Starting the EIS.
+   To start the EIS in production mode, provisioning is required. Then you will rebuild the service containers and launch EIS.
+   
+   ```
+   cd docker_setup/provision
+   sudo su
+   ./provision_eis.sh ../docker-compose.yml
+   
+   cd ..
+   docker-compose up --build -d
+   ```
 
-Getting a Bash Shell Inside a Container
-To list all of the running Docker containers type:
-`sudo docker ps`
+## Run Simulated Temperature Sensor Data
 
-The rightmost column will have a list of all the names of the containers. You’ll need the name of the container for many operations including running a Bash shell in the container.
+Next we will start a Python program that will publish simulated temperature data over MQTT. 
 
-To get a bash shell inside the ia_telegraf docker container simply run the command.
-`sudo docker exec -it ia_telegraf /bin/bash`
+### Simple Python temperature sensor simulator.
 
-Likewise, to get a bash shell inside the ia_data_analytics docker container simply run the command.
-`sudo docker exec -it ia_data_analytics /bin/bash`
-
-When you are inside a docker container often running a simple process snapshot command will give a lot of information about the purpose of the particular container. Be sure that you are in a container when running this command.
-
-`ps aux`
-
-# Run a Time Series Workflow
-
-## Configuring Telegraf for PointData Ingestion
-
-The configuration for point data ingestion can be found at: `$EIS_HOME/docker_setup/config/telegraf.conf`. Lets take a look at that file now. Open up the telegraf.conf file and find the section for input MQTT - Note: This is a large file and the needed section is around line 1200, use ctrl-f to search for "[[inputs.mqtt_consumer]]".
-
-```bash
-gedit $EIS_HOME/docker_setup/config/telegraf.conf
+First, go to the tools/mqtt-temp-sensor directory
+```
+cd ./tools/mqtt-temp-sensor
 ```
 
-```
-[[inputs.mqtt_consumer]]
-	servers = ["tcp://$HOST_IP:1883"]
-	topics = [
- 	"temperature/simulated/0",
- 	]
-	name_override = "point_data"
-	data_format = "json"
-   persistent_session = false
-   client_id = ""
-```
 
-In the following lab we will want to take CPU temperture measurments as part of the dashboard creation. Lets set up Telegraf to do that. Search for "[[inputs.cpu]]" and uncomment the following lines:
+1. Run the broker (Use `docker ps` to see if the broker has started successfully as the container starts in detached mode)
+    ```sh
+    $ ./broker.sh
+    ```
+2. Build and run the MQTT publisher docker container
+   * For EIS TimeSeries Analytics usecase
+     ```sh
+     $ ./build.sh && ./publisher.sh
+     ```
+   * For DiscoveryCreek usecase (publishes data from csv row by row)
+     ```sh
+     $ ./build.sh && ./publisher_csv.sh
+     ```
+     Once can also change filename, topic, sampling rate and subsample parameters in the publisher_csv.sh script.
 
-```
-# Read metrics about cpu usage
-[[inputs.cpu]]
-  ## Whether to report per-cpu stats or not
-  percpu = true
-  ## Whether to report total system cpu stats or not
-  totalcpu = true
-  ## If true, collect raw CPU time metrics.
-  collect_cpu_time = false
-  ## If true, compute and report the sum of all non-idle CPU states.
-  report_active = false
-```
+3. If one wish to see the messages going over MQTT, run the
+   subscriber with the following command:
+   ```sh
+   $ ./subscriber.sh
+   ```
 
-Save the changes.
-
-
-Inside the dockerfile.yml, The MQTT port is exposed to the host system. This means that with telegraph configured to receive input on the same port that any MQTT client which is sending traffic to the host system can be received and fed into the Intel Edge Insight software.
-
-### Rebuild EIS
-
-Since we changed the telegraf configuration we need to rebuild our images. 
-
-```
-cd $EIS_HOME/docker_setup/
-sudo make build run
-```
 
 ## Check the docker logs
 
-Uses command to check the logs of the docker telegraph container - You can use this method to troubleshoot issues with data transport.
-`sudo docker logs ia_telegraf`
+To verify the output please check the output of below commands
+   ```
+   docker logs -f ia_influxdbconnector
+   docker logs -f ia_visualizer
+   ```
 
-## Start the Simulated Sensor Data
+   Below is the snapshot of sample output of the ia_influxdbconnector command.
+   ```
+   I0822 09:03:01.705940       1 pubManager.go:111] Published message: map[data:point_classifier_results,host=ia_telegraf,topic=temperature/simulated/0 temperature=19.29358085726703,ts=1566464581.6201317 1566464581621377117] 
+   I0822 09:03:01.927094       1 pubManager.go:111] Published message: map[data:point_classifier_results,host=ia_telegraf,topic=temperature/simulated/0 temperature=19.29358085726703,ts=1566464581.6201317 1566464581621377117]
+   I0822 09:03:02.704000       1 pubManager.go:111] Published message: map[data:point_data,host=ia_telegraf,topic=temperature/simulated/0 ts=1566464582.6218634,temperature=27.353740759929877 1566464582622771952]
+   ```
 
-Once Intel EIS is rebuilt and running, go to the \$EIS_HOME/tools/mqtt-temp-sensor directory. From here you can launch MQTT broker as well as a publisher and subscriber.
+   Below is the snapshot of sample output of the ia_visualizer command.
+   ```
+   2019-08-26 10:38:13,869 : INFO : root : [visualize.py] :zmqSubscriber : in line : [402] : Classifier results: {'data': 'point_classifier_results,host=ia_telegraf,topic=temperature/simulated/0 temperature=18.624896449633443,ts=1566815892.9866698 1566815892987649482\n'}
+   2019-08-26 10:38:15,154 : INFO : root : [visualize.py] :zmqSubscriber : in line : [402] : Classifier results: {'data': 'point_classifier_results,host=ia_telegraf,topic=temperature/simulated/0 temperature=10.84324034762356,ts=1566815893.9882996 1566815893989408936\n'}
+   2019-08-26 10:38:15,154 : INFO : root : [visualize.py] :zmqSubscriber : in line : [402] : Classifier results: {'data': 'point_classifier_results,host=ia_telegraf,topic=temperature/simulated/0 temperature=10.052214661918322,ts=1566815894.990011 1566815894991129870\n'}
+   2019-08-26 10:38:16,776 : INFO : root : [visualize.py] :zmqSubscriber : in line : [402] : Classifier results: {'data': 'point_classifier_results,host=ia_telegraf,topic=temperature/simulated/0 temperature=12.555421975490562,ts=1566815895.9918363 1566815895993111771\n'}
 
-`$ cd $EIS_HOME/tools/mqtt-temp-sensor`
 
-Build the docker container
+# Congratulations
 
-`sudo ./build.sh`
-
-Run the broker
-
-`sudo ./broker.sh`
-
-**Open New Terminal**
-Run the publisher
-
-```
-export EIS_HOME=/home/eis/Workshop/IEdgeInsights-v1.5LTS
-cd $EIS_HOME/tools/mqtt-temp-sensor
-sudo ./publisher.sh
-```
-
-If you wish to see the messages going over MQTT, run the subscriber with the following command:
-**Open New Terminal**
-
-```
-
-export EIS_HOME=/home/eis/Workshop/IEdgeInsights-v1.5LTS
-cd $EIS_HOME/tools/mqtt-temp-sensor
-sudo ./subscriber.sh
-```
-
-## Verify the ia_data_agent is Ingesting and Publishing Data
-
-`sudo docker logs -f ia_data_agent`
-
-Below is a snapshot of sample output of the above command.
-
-```
-I0608 02:25:57.3029569 StreamManager.go:159] Publishing topic: point_classifier_results
-I0608 02:25:58.3029139 StreamManager.go:159] Publishing topic: point_classifier_results
-I0608 02:25:59.3025279 StreamManager.go:159] Publishing topic: point_classifier_results
-```
-
-## More Information about the DataAgent
-
-Technologies and Components Used
-The data agent uses a number of technologies directly and it also bundles several projects as sidecars into its docker image.
-
-Toml - Tom's obvious, minimal language is a specification that is often used for configuration files. This language is used for the configuration files in the TICK stack.
-GRPC - a high-performance, open source universal RPC framework
-
-### Security
-When the data agent begins it starts by reading the command-line arguments and checking if the program is running on a genuine Intel system.
-
-If it is running on a genuine Intel system it checks to see if the trusted platform module can be enabled
-If then checks to see if it is running in developer mode or production mode.
-
-Next it checks to make sure that vault is running and if it is not running the data agent will exit.
-
-It then reads the certificates for influxdb from vault and writes out the SSL secrets that the grpc internal client will use.
-
-The certificate authority certificate is written to /etc/ssl/ca/ca_certificate.pem
-Service Initialization
-
-After the security initialization is performed the data agent then launches influxdb and the stream manager.
-The data agent and then takes UDP data from influxdb and forward it to the stream manager
-The key for each stream is used as the topic to publish to the stream server.
-
-## Exploring the InfluxDB
-
-DescriptionInfluxDB is an open-source time series database developed by InfluxData. It is written in Go and optimized for fast, high-availability storage and retrieval of time series data in fields such as operations monitoring, application metrics, Internet of Things sensor data, and real-time analytics. 
-
-Let's use the InfluxDB command line client to connect to the InfluxDB.
-
-First we need to install the InfluxDB client:
-
-```
-sudo apt install influxdb-client
-```
-Next connect to InfluxDB:
-
-```
-influx -username admin -password admin123 -ssl -unsafeSsl
-```
-
-### Let's explore the database with some basic commands.
-
-Let's start by listing all the databases.
-```
-show databases;
-```
-
-Use the "datain" database 
-```
-use datain
-```
-
-Next let's view the measurement tables that are being recorded. This is the data that the Intel Edge Insights Software is recording.
-
-```
-show measurements
-```
-
-Now, we can view the data from the point_classifier. 
-```
-select * from point_data;
-```
-
-Now run through the same commands with the *point_classifier_results* measurements table.
-
-## Configure Kapacitor to Send Alerts
-
-Kapacitor is able to handle alerts using two different methods: Push to Handler and Publish and Subscribe
-
-Both approaches need handlers to be enabled and configured and information such as tokens and passwords need to be stored securely. 
-
-### Push to handler
-TICKscript handlers are relevant functions that can be called to handle data and push it to third parties. For example, you can call the log function, the email function, the HTTP out function or a user-defined third party function.
-
-### Publish and Subscribe
-Alert topics are similar to topics in MQTT. A topic is a string that groups together alerts. Multiple handlers can subscribe to a topics and be executed for any message published to the topic. Handlers are bound to topics either on the command line or in a YAML or JSON file.
-
-For example: 
-```
-topic: cpu
-id: slack
-kind: slack
-options:
-   channel: '#kapacitor'
-```
-
-Save this to a file named slack_cpu_handler.yaml
-
-```
-kapacitor define-topic-handler slack_cpu_handler.yaml
-
-```
-
-### List of Handlers
-
-The following handlers are currently supported:
-
-Alerta: Sending alerts to Alerta.
-
-Email: To send alerts by email.
-
-HipChat: Sending alerts to the HipChat service.
-
-Kafka: Sending alerts to an Apache Kafka cluster.
-
-MQTT: Publishing alerts to an MQTT broker.
-
-OpsGenie: Sending alerts to the OpsGenie service.
-
-PagerDuty: Sending alerts to the PagerDuty service.
-
-Pushover: Sending alerts to the Pushover service.
-
-Sensu: Sending alerts to Sensu.
-
-Slack: Sending alerts to Slack.
-
-SNMP Trap: Posting to SNMP traps.
-
-Talk: Sending alerts to the Talk service.
-
-Telegram: Sending alerts to Telegram.
-
-VictorOps: Sending alerts to the VictorOps service.
+At this point, you have successfully built a time-series pipeline.
