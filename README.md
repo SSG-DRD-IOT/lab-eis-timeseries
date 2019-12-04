@@ -67,6 +67,8 @@ gedit $EIS_HOME/docker_setup/docker-compose.yml
 
 Inside the docker-compose.yml search for the ia_video_ingestion and ia_video_analytics. Comment out the entire section. You can setup EIS to run both video and time series data pipelines, but for this lab we will not be using the video services.
 
+# We have installed gedit plugins which allow quick commenting and uncommenting of code. Select the code block you wish to comment and press Ctrl-m. To uncomment press Shift-Ctrl-m
+
 
 ### Modify the ia_visualizer in docker-compose.yml
    In ia_visualizer service, uncomment the following lines:
